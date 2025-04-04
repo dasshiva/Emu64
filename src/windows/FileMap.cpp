@@ -13,6 +13,7 @@ struct WindowsMap {
     LPVOID storage;
 };
 
+#include <iostream>
 FileMapping::FileMapping(const char* name) {
     valid = false;
     mapdata = new WindowsMap;
@@ -40,6 +41,8 @@ FileMapping::FileMapping(const char* name) {
         return;
     }
 
+    char* t = static_cast<char*>(map->storage);
+
     MEMORY_BASIC_INFORMATION info;
     VirtualQuery(map->storage, &info, sizeof(MEMORY_BASIC_INFORMATION));
     size = info.RegionSize;
@@ -62,7 +65,7 @@ FileMapping::~FileMapping() {
             CloseHandle(mp->fileview);
         if (mp->file)
             CloseHandle(mp->file);
-        delete mapdata;
+        //delete mp;
         mapdata = nullptr;
     }
     valid = false;

@@ -3,6 +3,7 @@
 
 class FileMapping {
 public:
+    FileMapping() = delete;
     FileMapping(const char* name);
     ~FileMapping();
     bool     IsValid() { return valid; }
@@ -11,8 +12,8 @@ public:
     uint64_t Size() { return size; }
 
 private:
-    bool valid;
-    void* mapdata;
+    bool valid = false;
+    void* mapdata = nullptr;
     uint64_t  size = 0;
     uint32_t  err = 0;
 };
