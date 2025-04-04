@@ -1,0 +1,5 @@
+# ninja log v5
+14	120	0	C:/Users/shiva/source/repos/Emu64/build/CMakeFiles/cmake.verify_globs	1fded1a7d8d5a616
+5	1313	7654871583642371	CMakeFiles/emu.dir/src/windows/FileMap.cpp.obj	3facc6f97c7defb9
+15	2524	7654871595761393	CMakeFiles/emu.dir/src/Emu64.cpp.obj	b77c7b3e50cdb4d4
+2526	3727	7654871607187069	emu.exe	aaf399b5cec4b078

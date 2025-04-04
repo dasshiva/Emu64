@@ -1,0 +1,3 @@
+C:/Users/shiva/source/repos/Emu64/build/CMakeFiles/emu.dir
+C:/Users/shiva/source/repos/Emu64/build/CMakeFiles/edit_cache.dir
+C:/Users/shiva/source/repos/Emu64/build/CMakeFiles/rebuild_cache.dir
