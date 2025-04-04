@@ -27,7 +27,6 @@ int main(int argc, const char** argv) {
 
 	uint64_t pc = 0;
 	while (true) {
-		//std::cout << pc << "\n";
 		uint8_t opc = mem.ReadU8(pc);
 		if (mem.GetError()) {
 			std::cout << "PAGE FAULT: Attempt to read invalid address "

@@ -13,7 +13,6 @@ struct WindowsMap {
     LPVOID storage;
 };
 
-#include <iostream>
 FileMapping::FileMapping(const char* name) {
     valid = false;
     mapdata = new WindowsMap;
