@@ -56,6 +56,9 @@ void* FileMapping::GetMappedMemory() {
 }
 
 FileMapping::~FileMapping() {
+    if (!valid)
+	return;
+
     if (mapdata) {
         struct WindowsMap* mp = static_cast<WindowsMap*>(mapdata);
         if (mp->storage)
