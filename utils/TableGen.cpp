@@ -4,6 +4,8 @@
 #define	FILE_INACCESSIBLE 1
 
 int main(int argc, const char** argv) {
+	if (argc != 2) 
+		return 1;
 	std::ofstream file;
 	file.open(argv[1]);
 	if (!file.is_open()) 

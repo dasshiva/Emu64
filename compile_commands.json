@@ -1,0 +1,26 @@
+[
+{
+  "directory": "/mnt/Emu64/build",
+  "command": "/usr/bin/g++  -I/mnt/Emu64/include -I/mnt/Emu64/gen-headers -g -std=gnu++17 -o CMakeFiles/emu.dir/src/DecoderImpl.cpp.o -c /mnt/Emu64/src/DecoderImpl.cpp",
+  "file": "/mnt/Emu64/src/DecoderImpl.cpp",
+  "output": "CMakeFiles/emu.dir/src/DecoderImpl.cpp.o"
+},
+{
+  "directory": "/mnt/Emu64/build",
+  "command": "/usr/bin/g++  -I/mnt/Emu64/include -I/mnt/Emu64/gen-headers -g -std=gnu++17 -o CMakeFiles/emu.dir/src/Emu64.cpp.o -c /mnt/Emu64/src/Emu64.cpp",
+  "file": "/mnt/Emu64/src/Emu64.cpp",
+  "output": "CMakeFiles/emu.dir/src/Emu64.cpp.o"
+},
+{
+  "directory": "/mnt/Emu64/build",
+  "command": "/usr/bin/g++  -I/mnt/Emu64/include -I/mnt/Emu64/gen-headers -g -std=gnu++17 -o CMakeFiles/emu.dir/src/Memory.cpp.o -c /mnt/Emu64/src/Memory.cpp",
+  "file": "/mnt/Emu64/src/Memory.cpp",
+  "output": "CMakeFiles/emu.dir/src/Memory.cpp.o"
+},
+{
+  "directory": "/mnt/Emu64/build",
+  "command": "/usr/bin/g++  -I/mnt/Emu64/include -I/mnt/Emu64/gen-headers -g -std=gnu++17 -o CMakeFiles/emu.dir/src/linux/FileMap.cpp.o -c /mnt/Emu64/src/linux/FileMap.cpp",
+  "file": "/mnt/Emu64/src/linux/FileMap.cpp",
+  "output": "CMakeFiles/emu.dir/src/linux/FileMap.cpp.o"
+}
+]
