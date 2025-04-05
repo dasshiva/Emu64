@@ -2,8 +2,13 @@
 //
 
 #include <Memory.hpp>
+#include <Emu64.h>
 #include <iostream>
 using namespace std;
+
+int decode_eb_gb(struct DecoderState* s) {
+	return 0;
+}
 
 int main(int argc, const char** argv) {
 	if (argc != 2) {
@@ -34,6 +39,10 @@ int main(int argc, const char** argv) {
 			return 1;
 		}
 
+		if (!Decoders[opc]) {
+			std::cout << "INVALID OPCODE: " << opc << "\n";
+			return 1;
+		}
 		if (opc == 0xC3)
 			break;
 		pc += 1;

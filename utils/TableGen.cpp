@@ -13,7 +13,12 @@ int main(int argc, const char** argv) {
 		bltns[i] = "decode_eb_gb";
 	}
 	file << "#pragma once" << std::endl;
+	file << "// auto generated DO NOT EDIT MANUALLY" << std::endl;
+	file << "// Edit utils/TableGen.cpp if you need changes here" 
+		<< std::endl;
 	file << "struct DecoderState;" << std::endl;
+	file << "extern int decode_eb_gb(struct DecoderState*);" 
+		<< std::endl;
 	file << "typedef int (*DecodeFunc)(DecoderState*);" << std::endl;
 	file << "const DecodeFunc Decoders[] = {" << std::endl;
 	for (int i = 0; i < 256; i++) {
