@@ -6,8 +6,7 @@ cmake_minimum_required (VERSION 3.12)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED True)
 
-# First make TableGen
-
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/gen-headers)
 file (GLOB GENERATED_HEADERS CONFIGURE_DEPENDS gen-headers/tables.h)
 file (GLOB SOURCE_FILES CONFIGURE_DEPENDS "src/*.cpp")
 file (GLOB HEADERS CONFIGURE_DEPENDS "include/*.hpp")
@@ -32,8 +31,19 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 	target_include_directories(emu PRIVATE "include")
 elseif((CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux") OR 
 		(CMAKE_HOST_SYSTEM_NAME STREQUAL "Android"))
+	add_executable(tablegen "utils/TableGen.cpp")
+        add_custom_command(
+                OUTPUT ${CMAKE_SOURCE_DIR}/gen-headers/tables.h
+                COMMAND tablegen ${CMAKE_SOURCE_DIR}/gen-headers/tables.h
+                DEPENDS tablegen
+                COMMENT "Generating tables"
+                VERBATIM
+        )
+        add_custom_target(AUTOGEN_HEADERS ALL DEPENDS ${CMAKE_SOURCE_DIR}/gen-headers/tables.h)
 	add_executable (emu ${SOURCE_FILES} ${LINUX_SOURCE_FILES} ${HEADERS}  ${GENERARATED_HEADERS})
 	target_include_directories(emu PRIVATE "include")
+	add_dependencies(emu AUTOGEN_HEADERS)
+        add_dependencies(emu tablegen)
 else()
 	message(FATAL_ERROR "Unknown platfrom ${CMAKE_HOST_SYSTEM_NAME}. Can't build")
 endif()
