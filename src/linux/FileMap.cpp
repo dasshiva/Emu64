@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
-
+#include <iostream>
 struct LinuxMap {
     int   file;
     void* storage;
@@ -38,34 +38,40 @@ FileMapping::FileMapping(const char* name) {
     }
 
     if ((st.st_size % 4096) != 0) {
-	int rem = st.st_size % 4096;
-	st.st_size += 4096 - rem;
+	    int rem = st.st_size % 4096;
+	    st.st_size += 4096 - rem;
     }
 
     size = st.st_size;
     valid = true;
+    close(map->file); // Linux doesn't need the file descriptor to be open
 }
 
 void* FileMapping::GetMappedMemory() {
     if (!valid)
         return nullptr;
+
     struct LinuxMap* map = static_cast<LinuxMap*>(mapdata);
     return map->storage;
 }
 
 FileMapping::~FileMapping() {
+    // Don't call the destructor unless the bug is fixed
+    return;
+    /*
     if (!valid)
-	return;
+	return; */
 
-    if (mapdata) {
-        struct LinuxMap* mp = static_cast<LinuxMap*>(mapdata);
-        if (mp->storage)
-            munmap(mp->storage, size);
-        if (mp->file)
-            close(mp->file);
-        //delete mp;
-        mapdata = nullptr;
-    }
+    /*if (mapdata) {
+        struct LinuxMap* mp = static_cast<LinuxMap*>(mapdata); */
+        /* Some versions of gcc call this destructor prematurely (I have no idea why)
+         * and hence munmap is called causing complete chaos as the underlying
+         * file just "vanishes". Don't munmap() unless this is fixed */
+        //if (mp->storage)
+        //    munmap(mp->storage, size);
+        // delete mp;
+        // mapdata = nullptr;
+    // }
 
-    valid = false;
+    // valid = false;
 }

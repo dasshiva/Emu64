@@ -34,7 +34,7 @@ int main(int argc, const char** argv) {
 		di.opcode = opc;
 
 		if (mem.GetError()) {
-			std::cout << "PAGE FAULT: Attempt to read invalid address "
+			std::cout << "PAGE FAULT: Attempt to read invalid address 0x"
 				<< std::hex << ds.pc << "\n";
 			return 1;
 		}

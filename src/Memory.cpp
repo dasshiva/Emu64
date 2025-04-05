@@ -9,6 +9,7 @@ Memory::Memory(FileMapping& fm) : map(fm) {
 	err = 0;
 }
 
+#include <iostream>
 uint8_t Memory::ReadU8(uint64_t pos) {
 	if (pos >= map.Size()) {
 		err = INVALID_MEM_ADDR;

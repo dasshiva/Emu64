@@ -1,0 +1,3 @@
+DO NOT COMPILE THIS PROJECT USING G++ OR GCC
+
+It only works with msvc (windows) and clang++ (linux/windows)
