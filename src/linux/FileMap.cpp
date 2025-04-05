@@ -57,21 +57,16 @@ void* FileMapping::GetMappedMemory() {
 
 FileMapping::~FileMapping() {
     // Don't call the destructor unless the bug is fixed
-    return;
-    /*
     if (!valid)
-	return; */
+	return; 
 
-    /*if (mapdata) {
-        struct LinuxMap* mp = static_cast<LinuxMap*>(mapdata); */
-        /* Some versions of gcc call this destructor prematurely (I have no idea why)
-         * and hence munmap is called causing complete chaos as the underlying
-         * file just "vanishes". Don't munmap() unless this is fixed */
-        //if (mp->storage)
-        //    munmap(mp->storage, size);
+    if (mapdata) {
+        struct LinuxMap* mp = static_cast<LinuxMap*>(mapdata); 
+        if (mp->storage)
+            munmap(mp->storage, size);
         // delete mp;
-        // mapdata = nullptr;
-    // }
+        mapdata = nullptr;
+    }
 
-    // valid = false;
+    valid = false;
 }

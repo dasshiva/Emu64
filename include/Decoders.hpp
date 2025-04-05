@@ -5,7 +5,7 @@ struct DecoderState {
 	uint64_t pc;
 	Memory&   mem;
 	uint32_t flags;
-	DecoderState(uint64_t pc, Memory mem) : pc(pc), mem(mem), flags(0) {}
+	DecoderState(uint64_t pc, Memory& mem) : pc(pc), mem(mem), flags(0) {}
 };
 
 /*
