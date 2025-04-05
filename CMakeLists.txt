@@ -29,7 +29,7 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 	add_dependencies(emu AUTOGEN_HEADERS)
 	add_dependencies(emu tablegen)
 	target_include_directories(emu PRIVATE "include")
-	target_include_directories(emu PRIVATE "include")
+	target_include_directories(emu PRIVATE "gen-headers")
 elseif((CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux") OR 
 		(CMAKE_HOST_SYSTEM_NAME STREQUAL "Android"))
 	add_executable(tablegen "utils/TableGen.cpp")

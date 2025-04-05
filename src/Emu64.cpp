@@ -2,13 +2,9 @@
 //
 
 #include <Memory.hpp>
-#include <Emu64.h>
+#include <Decoders.hpp>
 #include <iostream>
 using namespace std;
-
-int decode_eb_gb(struct DecoderState* s) {
-	return 0;
-}
 
 int main(int argc, const char** argv) {
 	if (argc != 2) {
@@ -30,22 +26,35 @@ int main(int argc, const char** argv) {
 		return 1;
 	}
 
-	uint64_t pc = 0;
+	DecoderState ds(0, mem);
 	while (true) {
-		uint8_t opc = mem.ReadU8(pc);
+		uint8_t opc = mem.ReadU8(ds.pc);
+		DecodedInstruction di;
+		di.pc = ds.pc;
+		di.opcode = opc;
+
 		if (mem.GetError()) {
 			std::cout << "PAGE FAULT: Attempt to read invalid address "
-				<< pc << "\n";
+				<< std::hex << ds.pc << "\n";
 			return 1;
 		}
 
 		if (!Decoders[opc]) {
-			std::cout << "INVALID OPCODE: " << opc << "\n";
+			std::cout << "INVALID OPCODE: 0x" << std::hex << (uint32_t)opc
+				<< " at pc = 0x" << ds.pc;
 			return 1;
 		}
+
+		uint64_t orig_pc = ds.pc;
+		ds.pc += 1; // skip the opcode as it already has been recorded
+		if (!Decoders[opc](&ds, &di)) {
+			std::cout << "INVALID INSTRUCTION AT: 0x" << std::hex << orig_pc << "\n";
+			return 1;
+		}
+
 		if (opc == 0xC3)
 			break;
-		pc += 1;
 	}
+
 	return 0;
 }
