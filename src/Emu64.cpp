@@ -1,6 +1,5 @@
 ﻿// Emu64.cpp : Defines the entry point for the application.
 //
-
 #include <Memory.hpp>
 #include <Decoders.hpp>
 #include <iostream>
@@ -39,7 +38,7 @@ int main(int argc, const char** argv) {
 			return 1;
 		}
 
-		if (!Decoders[opc]) {
+		if (OpcodeMap1[opc >> 4][opc & 0b1111] != 0xFFFF) {
 			std::cout << "INVALID OPCODE: 0x" << std::hex << (uint32_t)opc
 				<< " at pc = 0x" << ds.pc;
 			return 1;
