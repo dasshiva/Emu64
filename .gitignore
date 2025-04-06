@@ -363,5 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 build
-gen-headers/*.h
-gen-headers/*.hpp
+gen-headers/**

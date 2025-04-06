@@ -30,7 +30,6 @@ int main(int argc, const char** argv) {
 	std::map<int, std::string> bltns;
 	addBuiltin<int>(bltns, "decode_eb_gb", 0, 0x10, 0x20, 0x30);
 
-	file << "#pragma once" << std::endl;
 	file << "// auto generated DO NOT EDIT MANUALLY" << std::endl;
 	file << "// Edit utils/TableGen.cpp if you need changes here" 
 		<< std::endl;
@@ -39,18 +38,18 @@ int main(int argc, const char** argv) {
 	// but most compilers do not care about some extra 
 	// function signature declarations
 	for (auto it = bltns.begin(); it != bltns.end(); it++) {
-		file << "int " << it->second << "(DecoderState*, DecodedInstruction*);\n";
+		file << "int " << it->second << "(struct DecoderState*, struct DecodedInstruction*);\n";
 	}
 
 	// Declare fundamental types
-	file << "typedef int (*DecodeFunc)(DecoderState*, DecodedInstruction*);" << std::endl;
+	file << "typedef int (*DecodeFunc)(struct DecoderState*, struct DecodedInstruction*);" << std::endl;
 	file << "const DecodeFunc Decoders[] = {" << std::endl;
 	for (int i = 0; i < 256; i++) {
 		auto fn = bltns.find(i);
 		if (fn != bltns.end()) 
 			file << fn->second << "," << std::endl;
 		else 
-			file << "nullptr," << std::endl;
+			file << "((void*)0)," << std::endl;
 	}
 	
 	file << "};" << std::endl;
@@ -84,7 +83,7 @@ int main(int argc, const char** argv) {
 			file << ",";
 		file << "\n";
 	}
-	file << "};";
+	file << "};\n";
 	file.close();
 	return 0;
 }

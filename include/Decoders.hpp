@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <Memory.hpp>
+
 struct DecoderState {
 	uint64_t pc;
 	Memory&   mem;
@@ -40,9 +41,23 @@ enum ByteRegs {
 	BH = init8(7),
 };
 
-// All of these functions return 0 on failure and 1 for success
-int decode_eb_gb(DecoderState*, DecodedInstruction*);
+// A lot of cruft here, so let me explain
+// By default c++ linkers will remove all symbols if they find anything
+// to be unused. Even __atribute__((visibility("default"))) does not help
+// the cause. Thus TableGen generates C code instead of C++  and we 
+// compile with "-fvisibility=default" so that everything from 'C' code
+// exported. The downside is that these symbols from TableGen don't get
+// mangled nor can TableGen code itself refer to mangled symbol names
+// Hence everything is wrapped inside extern "C"
 
-// This must always be after everything in the file because the auto 
-// generated tables.h refers to all of these functions.
-#include <tables.h>
+// All of these functions return 0 on failure and 1 for success
+extern "C" {
+	int decode_eb_gb(DecoderState*, DecodedInstruction*);
+}
+
+extern "C" {
+// Provided by tablegen code
+	extern const unsigned short OpcodeMap1[16][16];
+	typedef int (*DecodeFunc)(DecoderState*, DecodedInstruction*);
+	extern const DecodeFunc Decoders[];
+}
