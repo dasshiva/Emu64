@@ -89,6 +89,11 @@ bltns.end()) file << fn->second << "," << std::endl; else file << "((void*)0),"
         return 0;
 } */
 
+int processOpcode(Vector* vec, std::map<unsigned, std::string>& opmap) {
+    std::cout << "Elems = " << vec->Length;
+    return 0;
+}
+
 int processRegs(Value* val, std::ofstream& hfile) {
     Vector *bregs = val->Array;
     for (uint64_t i = 0; i < bregs->Length; i++) {
@@ -150,6 +155,7 @@ int main(int argc, const char **argv) {
     sfile << "// Consider editing utils/file.cfg or utils/TableGen.cpp instead\n";
     sfile << "#include \"" << std::string(argv[2]) + ".h" << "\" \n";
 
+    std::map<unsigned, std::string> OpcodeMap;
     ConfigEntry *ce = config->List;
     for (uint64_t idx = 0; idx < config->Entries; idx++) {
         uint64_t len = std::strlen(ce->Key);
@@ -165,6 +171,21 @@ int main(int argc, const char **argv) {
                     return 1;
             }
         }
+
+	if (len > 6) { // 6 = strlen("Opcode")
+	    if (ce->Key[len-6] == 'O' && ce->Key[len-5] == 'p' &&
+                    ce->Key[len-4] == 'c' && ce->Key[len-3] == 'o' &&
+		    ce->Key[len-2] == 'd' && ce->Key[len - 1] == 'e') {
+		if (ce->Type != ARRAY_TYPE) {
+		    std::cout << "All *Opcode keys must be arrays\n";
+		    return 1;
+		}
+
+		if (processOpcode(ce->Value->Array, OpcodeMap) < 0)
+		    return 1;
+
+	    }
+	}
 
         if (std::strcmp(ce->Key, "Decoders") == 0) {
             if (ce->Type != ARRAY_TYPE) {
@@ -184,7 +205,7 @@ int main(int argc, const char **argv) {
                 sfile << "int " << pv->String << " (struct DecoderState*, " <<
                     "struct DecodedInstruction*); " << std::endl;
             }
-        }   
+        }
         ce = ce->Next;
     }
 
