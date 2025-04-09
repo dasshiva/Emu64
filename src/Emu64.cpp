@@ -38,7 +38,7 @@ int main(int argc, const char** argv) {
 			return 1;
 		}
 
-		if (OpcodeMap1[opc >> 4][opc & 0b1111] == 0xFFFF) {
+		if (OpcodeMap1[opc] == 0xFFFF) {
 			std::cout << "INVALID OPCODE: 0x" << std::hex << (uint32_t)opc
 				<< " at pc = 0x" << ds.pc;
 			return 1;

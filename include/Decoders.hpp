@@ -52,12 +52,7 @@ enum ByteRegs {
 
 // All of these functions return 0 on failure and 1 for success
 extern "C" {
-	int decode_eb_gb(DecoderState*, DecodedInstruction*);
+	int decode_EB_GB(DecoderState*, DecodedInstruction*);
 }
 
-extern "C" {
-// Provided by tablegen code
-	extern const unsigned short OpcodeMap1[16][16];
-	typedef int (*DecodeFunc)(DecoderState*, DecodedInstruction*);
-	extern const DecodeFunc Decoders[];
-}
+#include <tables.h>

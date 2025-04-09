@@ -12,84 +12,8 @@ extern "C" {
 
 #define FILE_INACCESSIBLE 1
 
-/*void addBuiltin(std::map<int, std::string>& bltns, std::string toappend, int
-fst){ bltns[fst] = toappend;
-}
-
-template<typename... Args>
-void addBuiltin(std::map<int, std::string>& bltns, std::string toappend, int
-fst, Args... n) { bltns[fst] = toappend; addBuiltin(bltns, toappend, n...);
-}
-
-int main(int argc, const char** argv) {
-        if (argc != 2)
-                return 1;
-        std::ofstream file;
-        file.open(argv[1]);
-        if (!file.is_open())
-                return FILE_INACCESSIBLE;
-
-        
-        // Add builtin decoder functions here as needed
-        std::map<int, std::string> bltns;
-        addBuiltin<int>(bltns, "decode_eb_gb", 0, 0x10, 0x20, 0x30);
-
-        file << "// auto generated DO NOT EDIT MANUALLY" << std::endl;
-        file << "// Edit utils/TableGen.cpp if you need changes here"
-                << std::endl;
-
-        // Some duplicate function prototypes will be created
-        // but most compilers do not care about some extra
-        // function signature declarations
-        for (auto it = bltns.begin(); it != bltns.end(); it++) {
-                file << "int " << it->second << "(struct DecoderState*, struct
-DecodedInstruction*);\n";
-        }
-
-        // Declare fundamental types
-         file << "const DecodeFunc Decoders[] = {"
-<< std::endl; for (int i = 0; i < 256; i++) { auto fn = bltns.find(i); if (fn !=
-bltns.end()) file << fn->second << "," << std::endl; else file << "((void*)0),"
-<< std::endl;
-        }
-
-        file << "};" << std::endl;
-
-        std::map<int, std::string> opcodes;
-        // Add opcodes here as needed
-        opcodes[0] = "ADD_EB_GB";
-        opcodes[0x10] = "ADC_EB_GB";
-        opcodes[0x20] = "AND_EB_GB";
-        opcodes[0x30] = "XOR_EB_GB";
-        for (auto it = opcodes.begin(); it != opcodes.end(); it++) {
-                file << "#define " << it->second << " (" << it->first << ")\n";
-        }
-
-        file << "const unsigned short OpcodeMap1[16][16] = {" << std::endl;
-        for (uint8_t i = 0; i < 16; i++) {
-                file << "{";
-                for (uint8_t j = 0; j < 16; j++) {
-
-                        auto op = opcodes.find((i << 4) | j);
-                        if (op != opcodes.end())
-                                file << op->second;
-                        else
-                                file << "0xFFFF";
-                        if (j != 15)
-                                file << ",";
-                }
-
-                file << "}";
-                if (i != 15)
-                        file << ",";
-                file << "\n";
-        }
-        file << "};\n";
-        file.close();
-        return 0;
-} */
-
-int processOpcode(Vector* vec, std::map<unsigned, std::string>& opmap) {
+int processOpcode(Vector* vec, std::map<unsigned, std::string>& opmap
+		, std::map<unsigned, std::string>& dmap) {
     PrimitiveValue *n1, *n2;
     n1 = GetElement(vec, 0);
     n2 = GetElement(vec, 1);
@@ -108,6 +32,35 @@ int processOpcode(Vector* vec, std::map<unsigned, std::string>& opmap) {
     if (vec->Length != ((2*n + 1) * m + 2)) {
 	std::cout << "*Opcode vector has invalid number of elements\n";
 	return -1;
+    }
+
+    for (uint64_t op = 2; op < vec->Length; op++) {
+	PrimitiveValue* name = GetElement(vec, op);
+	if (name->Type != STRING_TYPE) {
+	    std::cout << "Instruction name must be a string\n";
+	    return -1;
+	}
+
+	op++;
+	for (uint64_t fm_desc = 0; fm_desc < 2*n; fm_desc += 2) {
+	    PrimitiveValue* fm = GetElement(vec, op + fm_desc);
+	    if (fm->Type != STRING_TYPE) {
+		std::cout << "Instruction Format name must be string\n";
+		return -1;
+	    }
+
+	    PrimitiveValue* opcode = GetElement(vec, op + fm_desc + 1);
+	    if (opcode->Type != NUMBER_TYPE) {
+		std::cout << "Format opcode must be number\n";
+		return -1;
+	    }
+
+	    opmap[opcode->Number] = std::string(name->String) + "_" + 
+		    fm->String;
+	    dmap[opcode->Number] = fm->String;
+	}
+
+	op += (2 * n) - 1;
     }
 
     return 0;
@@ -163,6 +116,7 @@ int main(int argc, const char **argv) {
     hfile << "extern \"C\" { " << std::endl;
     hfile << "#endif" << std::endl; 
     hfile << "#pragma once\n\n";
+    hfile << "#include <stdint.h>\n";
 
     hfile << "struct DecoderState;\n";
     hfile << "struct DecodedInstruction;\n\n";
@@ -174,7 +128,7 @@ int main(int argc, const char **argv) {
     sfile << "// Consider editing utils/file.cfg or utils/TableGen.cpp instead\n";
     sfile << "#include \"" << std::string(argv[2]) + ".h" << "\" \n";
 
-    std::map<unsigned, std::string> OpcodeMap;
+    std::map<unsigned, std::string> OpcodeMap, DecoderMap;
     ConfigEntry *ce = config->List;
     for (uint64_t idx = 0; idx < config->Entries; idx++) {
         uint64_t len = std::strlen(ce->Key);
@@ -200,7 +154,7 @@ int main(int argc, const char **argv) {
 		    return 1;
 		}
 
-		if (processOpcode(ce->Value->Array, OpcodeMap) < 0)
+		if (processOpcode(ce->Value->Array, OpcodeMap, DecoderMap) < 0)
 		    return 1;
 
 	    }
@@ -228,9 +182,35 @@ int main(int argc, const char **argv) {
         ce = ce->Next;
     }
 
+    for (auto it = OpcodeMap.begin(); it != OpcodeMap.end(); it++) {
+	hfile << "#define " << it->second << " " << '(' << it->first << ')'
+		<< std::endl;
+    }
+    hfile << "extern const uint16_t OpcodeMap1[];\n";
     hfile << "#ifdef __cplusplus" << std::endl;
     hfile << "} " << std::endl;
     hfile << "#endif" << std::endl;
+
+    sfile << "const uint16_t OpcodeMap1[] = {\n";
+    for (unsigned i = 0; i < 256; i++) {
+	auto it = OpcodeMap.find(i);
+	if (it != OpcodeMap.end()) 
+	   sfile << it->second << ",\n";
+	else 
+	   sfile << "0xFFFF,\n";
+    }
+    sfile << "};\n";
+
+    sfile << "const DecodeFunc Decoders[] = {\n";
+    for (unsigned i = 0; i < 256; i++) {
+	auto it = DecoderMap.find(i);
+	if (it != DecoderMap.end()) 
+	   sfile << ("decode_" + it->second) << ",\n";
+	else 
+	   sfile << "((void*)0),\n";
+    }
+    sfile << "};\n";
+
 
     hfile.close();
     sfile.close();

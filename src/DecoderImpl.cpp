@@ -12,7 +12,7 @@ struct ModRM {
 		reg((n & 0b111000) >> 3) {}
 };
 
-int decode_eb_gb(DecoderState* state, DecodedInstruction* ins) {
+int decode_EB_GB(DecoderState* state, DecodedInstruction* ins) {
 	ins->flags |= FLAGS_8_BIT;
 
 	// We only need to read the ModR/M byte
