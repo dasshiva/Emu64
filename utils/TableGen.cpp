@@ -184,8 +184,7 @@ int main(int argc, const char **argv) {
                 sfile << "int " << pv->String << " (struct DecoderState*, " <<
                     "struct DecodedInstruction*); " << std::endl;
             }
-        }
-           
+        }   
         ce = ce->Next;
     }
 
