@@ -29,18 +29,6 @@ struct DecodedInstruction {
 #define FLAGS_32_BIT (2)
 #define FLAGS_64_BIT (3)
 
-#define init8(val) ((val) << FLAGS_8_BIT)
-enum ByteRegs {
-	AL = init8(0),
-	CL = init8(1),
-	DL = init8(2),
-	BL = init8(3),
-	AH = init8(4),
-	CH = init8(5),
-	DH = init8(6),
-	BH = init8(7),
-};
-
 // A lot of cruft here, so let me explain
 // By default c++ linkers will remove all symbols if they find anything
 // to be unused. Even __atribute__((visibility("default"))) does not help
@@ -55,4 +43,6 @@ extern "C" {
 	int decode_EB_GB(DecoderState*, DecodedInstruction*);
 }
 
+extern "C" {
 #include <tables.h>
+}

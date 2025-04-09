@@ -21,7 +21,7 @@ int decode_EB_GB(DecoderState* state, DecodedInstruction* ins) {
 	CHECKED_READ(n, state);
 
 	ModRM modrm(n);
-	ins->dest = init8(modrm.reg);
+	//ins->dest = init8(modrm.reg);
 
 	// We have the source now, go after the destination
 
