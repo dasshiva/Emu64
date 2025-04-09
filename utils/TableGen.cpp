@@ -3,9 +3,15 @@
 #include <map>
 #include <ostream>
 #include <string>
+#include <iostream>
+
+extern "C" {
+#include "cfg/cfg_parse.h"
+}
+
 #define	FILE_INACCESSIBLE 1
 
-void addBuiltin(std::map<int, std::string>& bltns, std::string toappend, int fst){
+/*void addBuiltin(std::map<int, std::string>& bltns, std::string toappend, int fst){
 	bltns[fst] = toappend;
 }
 
@@ -86,4 +92,46 @@ int main(int argc, const char** argv) {
 	file << "};\n";
 	file.close();
 	return 0;
+} */
+
+int main(int argc, const char** argv) {
+    if (argc != 3) {
+	std::cout << "Usage: " << argv[0] << " [CONF].cfg [OUTPUT].h\n";
+	return 1;
+    }
+
+    Config* config;
+    int status = ParseConfig(argv[1], &config);
+    if (status < 0) {
+	std::cout << "ERROR: " << ErrToString(status) << "\n";
+	return 1;
+    }
+
+    std::ofstream file;
+    file.open(argv[2]);
+    if (!file.is_open()) {
+	std::cout << "Failed to access output file " << argv[2] << "\n";
+	return 1;
+    }
+
+    Value* bvec = FindValue(config, ARRAY_TYPE, "ByteRegs");
+    if (!bvec) {
+	std::cout << "Required Key 'ByteRegs' not found" << "\n";
+	return 1;
+    }
+
+    Vector* bregs = bvec->Array;
+    for (uint64_t i = 0; i < bregs->Length; i++) {
+	PrimitiveValue* pv = GetElement(bregs, i);
+	if (pv->Type != STRING_TYPE) {
+	    std::cout << "All Values in ByteRegs must be strings\n";
+	    return 1;
+	}
+
+	file << "#define REG_" << pv->String << " (" << i << ")" << "\n";
+    }
+
+    file.close();
+    FreeConfig(config);
+    return 0;
 }
