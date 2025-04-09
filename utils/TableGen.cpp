@@ -90,7 +90,26 @@ bltns.end()) file << fn->second << "," << std::endl; else file << "((void*)0),"
 } */
 
 int processOpcode(Vector* vec, std::map<unsigned, std::string>& opmap) {
-    std::cout << "Elems = " << vec->Length;
+    PrimitiveValue *n1, *n2;
+    n1 = GetElement(vec, 0);
+    n2 = GetElement(vec, 1);
+
+    if (!n1 || !n2) {
+	std::cout << "*Opcode vector too small\n";
+	return -1;
+    }
+
+    if (n1->Type != NUMBER_TYPE || n2->Type != NUMBER_TYPE) {
+	std::cout << "m and n must be integers\n";
+	return -1;
+    }
+
+    uint64_t m = n1->Number, n = n2->Number;
+    if (vec->Length != ((2*n + 1) * m + 2)) {
+	std::cout << "*Opcode vector has invalid number of elements\n";
+	return -1;
+    }
+
     return 0;
 }
 
