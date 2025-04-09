@@ -186,7 +186,9 @@ int main(int argc, const char **argv) {
 	hfile << "#define " << it->second << " " << '(' << it->first << ')'
 		<< std::endl;
     }
+    hfile << "struct ModRM { unsigned Mod; unsigned Reg; unsigned RM; }; \n";
     hfile << "extern const uint16_t OpcodeMap1[];\n";
+    hfile << "extern const struct ModRM ModRMLUT[];\n";
     hfile << "#ifdef __cplusplus" << std::endl;
     hfile << "} " << std::endl;
     hfile << "#endif" << std::endl;
@@ -211,6 +213,15 @@ int main(int argc, const char **argv) {
     }
     sfile << "};\n";
 
+    sfile << "const struct ModRM ModRMLUT[256] = {\n";
+    for (int i = 0; i < 4; i++) { // mod
+        for (int j = 0; j < 8; j++) { // reg
+            for (int k = 0; k < 8; k++) { // base
+                sfile << '{' << i << ',' << j << ',' << k << '}' << ",\n";
+            }
+        }
+    }
+    sfile << "};\n";
 
     hfile.close();
     sfile.close();
