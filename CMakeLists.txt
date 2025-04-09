@@ -34,21 +34,31 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 elseif((CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux") OR 
 		(CMAKE_HOST_SYSTEM_NAME STREQUAL "Android"))
 	add_compile_options(-fvisibility=default)
+
 	add_executable(tablegen "utils/TableGen.cpp" "utils/cfg/cfg_parse.c")
     add_custom_command(
-        OUTPUT ${CMAKE_SOURCE_DIR}/gen-headers/tables.c
-        COMMAND tablegen ${CMAKE_SOURCE_DIR}/utils/tables.cfg ${CMAKE_SOURCE_DIR}/gen-headers/tables.c
+        OUTPUT ${CMAKE_SOURCE_DIR}/gen-headers/tables.c ${CMAKE_SOURCE_DIR}/gen-headers/tables.h
+        COMMAND tablegen ${CMAKE_SOURCE_DIR}/utils/tables.cfg ${CMAKE_SOURCE_DIR}/gen-headers/tables
         DEPENDS tablegen ${CMAKE_SOURCE_DIR}/utils/tables.cfg
         COMMENT "Generating tables"
         VERBATIM
     )
 
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-    add_custom_target(AUTOGEN_HEADERS ALL DEPENDS ${CMAKE_SOURCE_DIR}/gen-headers/tables.c)
-	add_executable (emu ${CMAKE_SOURCE_DIR}/gen-headers/tables.c ${SOURCE_FILES} ${LINUX_SOURCE_FILES} ${HEADERS} )
+
+    add_custom_target(AUTOGEN_HEADERS ALL DEPENDS 
+        ${CMAKE_SOURCE_DIR}/gen-headers/tables.c 
+        ${CMAKE_SOURCE_DIR}/gen-headers/tables.h)
+
+	add_executable (emu ${CMAKE_SOURCE_DIR}/gen-headers/tables.c 
+        ${SOURCE_FILES} ${LINUX_SOURCE_FILES} ${HEADERS}
+        ${CMAKE_SOURCE_DIR}/gen-headers/tables.h)
+
 	target_include_directories(emu PRIVATE "include")
+    target_include_directories(emu PRIVATE "gen-headers")
 	add_dependencies(emu AUTOGEN_HEADERS)
     add_dependencies(emu tablegen)
+
 else()
 	message(FATAL_ERROR "Unknown platfrom ${CMAKE_HOST_SYSTEM_NAME}. Can't build")
 endif()
