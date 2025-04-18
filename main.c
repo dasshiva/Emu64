@@ -109,34 +109,37 @@ int GetRegister(char** ins, int32_t* ret) {
 
 }
 
+int GetRegisterWithComma(char** ins, int32_t* reg) {
+	int status = GetRegister(ins, reg);
+    if (status)
+        return status;
+
+    if (SkipSpace(ins, NO_EOF))
+        return UNEXPECTED_EOF;
+
+    if (**ins != ',')
+        return EXPECTED_COMMA;
+
+	return SUCCESS;
+}
+
 int AssembleAllRegs(char* ins, uint32_t* result) {
 	if (SkipSpace(&ins, NO_EOF))
 		return UNEXPECTED_EOF;
 
 	int32_t rA = 0, rB = 0, rC = 0;
-	int status = GetRegister(&ins, &rC);
+
+	int status = GetRegisterWithComma(&ins, &rC);
 	if (status)
 		return status;
-
-	if (SkipSpace(&ins, NO_EOF))
-		return UNEXPECTED_EOF;
-
-	if (*ins != ',')
-		return EXPECTED_COMMA;
 
 	ins++;
 	if (SkipSpace(&ins, NO_EOF))
 		return UNEXPECTED_EOF;
 
-	status = GetRegister(&ins, &rA);
+	status = GetRegisterWithComma(&ins, &rA);
     if (status)
         return status;
-
-    if (SkipSpace(&ins, NO_EOF))
-        return UNEXPECTED_EOF;
-
-    if (*ins != ',')
-        return EXPECTED_COMMA;
 
     ins++;
     if (SkipSpace(&ins, NO_EOF))
@@ -151,6 +154,7 @@ int AssembleAllRegs(char* ins, uint32_t* result) {
 		return STRAY_TOKEN;
 
 	*result |= (rA << 27) | (rB << 22) | (rC << 17);
+	printf("rC=%d rA=%d rB=%d\n", rC, rA, rB);
     return SUCCESS;
 }
 
