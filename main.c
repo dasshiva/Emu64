@@ -9,7 +9,12 @@ enum Status {
     UNKNOWN_OPCODE,
     UNEXPECTED_EOF,
     ARG_NULL,
-    RESULT_NULL
+    RESULT_NULL,
+	INVALID_REGISTER,
+	EXPECTED_REGNO,
+	EXPECTED_REGISTER,
+	EXPECTED_COMMA,
+	STRAY_TOKEN,
 };
 
 typedef int (*AssembleFunc)(char*, uint32_t*);
@@ -32,7 +37,7 @@ enum SSFlags {
 
 int SkipSpace(char** ins, int flags) {
     while (isspace(**ins)) {
-        *ins++;
+        (*ins)++;
     }
     
     if ((flags & NO_EOF) && (**ins == '\0'))
@@ -80,136 +85,73 @@ int AssembleGeneric(char* ins, uint32_t* result) {
     return instrs[idx].func(ins, result);
 }
 
-int AssembleAllRegs(char* ins, uint32_t* result) {
-    return SUCCESS;
+int GetRegister(char** ins, int32_t* ret) {
+	if (**ins != 'r')
+		return EXPECTED_REGISTER;
+
+	(*ins)++;
+	int32_t reg = -1;
+
+	for (;;(*ins)++) {
+        if (isdigit(**ins))
+            reg = (reg == -1) ? (**ins - '0') : (reg * 10 + (**ins - '0'));
+        else break;
+    }
+
+	if (reg == -1)
+		return EXPECTED_REGNO;
+
+	if (reg > 31)
+		return INVALID_REGISTER;
+
+	*ret = reg;
+	return SUCCESS;
+
 }
 
-uint32_t encode(char* ins) {
-    while (isspace(*ins)) {
-        ins++;
-    }
+int AssembleAllRegs(char* ins, uint32_t* result) {
+	if (SkipSpace(&ins, NO_EOF))
+		return UNEXPECTED_EOF;
 
-    if (*ins == '\0')
-        return 0xFFFFFFFF;
+	int32_t rA = 0, rB = 0, rC = 0;
+	int status = GetRegister(&ins, &rC);
+	if (status)
+		return status;
 
-    char opcode[10] = {0};
-    for (int i = 0; i < 10; i++, ins++) {
-        if (*ins == '\0')
-            return 0xFFFFFFFF;
+	if (SkipSpace(&ins, NO_EOF))
+		return UNEXPECTED_EOF;
 
-        if (isalpha(*ins))
-            opcode[i] = *ins;
-        else 
-            break;
-    }
+	if (*ins != ',')
+		return EXPECTED_COMMA;
 
-    while (isspace(*ins)) {
-        ins++;
-    }
+	ins++;
+	if (SkipSpace(&ins, NO_EOF))
+		return UNEXPECTED_EOF;
 
-    if (*ins == '\0')
-        return 0xFFFFFFFF;
+	status = GetRegister(&ins, &rA);
+    if (status)
+        return status;
 
-    if (*ins != 'r')
-        return 0xFFFFFFFF;
-
-    int rC = -1;
-    ins++;
-    for (;;ins++) {
-        if (*ins == '\0')
-            return 0xFFFFFFFF;
-
-        if (isdigit(*ins))
-            rC = (rC == -1) ? (*ins - '0') : (rC * 10 + (*ins - '0'));
-        else break;
-    }
-
-    if (rC == -1 || rC > 31)
-        return 0xFFFFFFFF;
-
-    while (isspace(*ins)) {
-        ins++;
-    }
-
-    if (*ins == '\0')
-        return 0xFFFFFFFF;
+    if (SkipSpace(&ins, NO_EOF))
+        return UNEXPECTED_EOF;
 
     if (*ins != ',')
-        return 0xFFFFFFFF;
+        return EXPECTED_COMMA;
 
     ins++;
-    while (isspace(*ins)) {
-        ins++;
-    }
+    if (SkipSpace(&ins, NO_EOF))
+        return UNEXPECTED_EOF;
 
-    if (*ins == '\0')
-        return 0xFFFFFFFF;
+	status = GetRegister(&ins, &rB);
+    if (status)
+        return status;
 
-    if (*ins != 'r')
-        return 0xFFFFFFFF;
+	SkipSpace(&ins, 0);
+	if (*ins != '\0')
+		return STRAY_TOKEN;
 
-    int rA = -1;
-    ins++;
-    for (;;ins++) {
-        if (*ins == '\0')
-            return 0xFFFFFFFF;
-
-        if (isdigit(*ins))
-            rA = (rA == -1) ? (*ins - '0') : (rA * 10 + (*ins - '0'));
-        else break;
-    }
-
-    if (rA == -1 || rA > 31)
-        return 0xFFFFFFFF;
-
-    while (isspace(*ins)) {
-        ins++;
-    }
-
-    if (*ins == '\0')
-        return 0xFFFFFFFF;
-
-    if (*ins != ',')
-        return 0xFFFFFFFF;
-    ins++;
-
-    while (isspace(*ins)) {
-        ins++;
-    }
-
-    if (*ins == '\0')
-        return 0xFFFFFFFF;
-
-    if (*ins != 'r')
-        return 0xFFFFFFFF;
-
-    int rB = -1;
-    ins++;
-    for (;;ins++) {
-        if (*ins == '\0') // Line ends right after last register
-            break;
-
-        if (isdigit(*ins))
-            rB = (rB == -1) ? (*ins - '0') : (rB * 10 + (*ins - '0'));
-        else break;
-    }
-
-    if (rB == -1 || rB > 31)
-        return 0xFFFFFFFF;
-
-    while (isspace(*ins)) {
-        ins++;
-    }
-
-    if (*ins != '\0')
-        return 0xFFFFFFFF;
-
-    if (strcmp(opcode, "add") != 0)
-        return 0xFFFFFFFF;
-
-    uint32_t ret = rA << 27 | rB << 22 | rC << 17 | 0x31 << 11
-       | 0x3A; 
-    return ret;
+	*result |= (rA << 27) | (rB << 22) | (rC << 17);
+    return SUCCESS;
 }
 
 int main(int argc, char** argv) {
